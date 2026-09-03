@@ -14,8 +14,10 @@ as the **whole server**, the way a PHPStorm/DBeaver data source does.
 
 ## Features
 
-- **Add / edit / delete connections.** Credentials are stored in the OS keychain
-  via VS Code SecretStorage — never in `settings.json`.
+- **Add / edit / delete connections** in a dedicated manager panel — a
+  connection list plus a form with a **Test Connection** button. Credentials
+  are stored in the OS keychain via VS Code SecretStorage — never in
+  `settings.json`.
 - **Whole-server browsing.** Leave the database field blank and the connection
   lists every schema → table → column. Cross-schema `JOIN`s work.
 - **SQL console + results grid.** Run a statement (or the active `.sql` file /

@@ -124,6 +124,41 @@ export class DbManager {
     }));
   }
 
+  /**
+   * Validate connection details WITHOUT persisting anything. Opens a
+   * throwaway single connection with the supplied credentials, runs
+   * `SELECT 1`, and closes it. Throws on failure so the caller can surface
+   * the driver's message.
+   */
+  async test(
+    config: Omit<ConnectionConfig, "id">,
+    password: string,
+  ): Promise<{ serverVersion: string }> {
+    const connectTimeout = vscode.workspace
+      .getConfiguration("mysqlWorkbench")
+      .get<number>("connectTimeout", 10000);
+
+    const conn = await mysql.createConnection({
+      host: config.host,
+      port: config.port,
+      user: config.user,
+      password,
+      database: config.defaultSchema || undefined,
+      connectTimeout,
+      multipleStatements: false,
+    });
+    try {
+      await conn.query("SELECT 1");
+      const [rows] = await conn.query<mysql.RowDataPacket[]>(
+        "SELECT VERSION() AS version",
+      );
+      const version = rows.length > 0 ? String(rows[0].version) : "unknown";
+      return { serverVersion: version };
+    } finally {
+      await conn.end();
+    }
+  }
+
   /** Run arbitrary SQL. Errors are thrown; the caller surfaces them. */
   async query(config: ConnectionConfig, sql: string): Promise<QueryResult> {
     const pool = await this.pool(config);

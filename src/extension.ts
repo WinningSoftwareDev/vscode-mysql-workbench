@@ -7,7 +7,7 @@ import {
   SchemaNode,
   TableNode,
 } from "./tree";
-import { promptConnection } from "./prompt";
+import { ConnectionManagerPanel } from "./manager";
 import { ConsolePanel } from "./console";
 
 export function activate(context: vscode.ExtensionContext): void {
@@ -20,15 +20,13 @@ export function activate(context: vscode.ExtensionContext): void {
   );
 
   context.subscriptions.push(
-    vscode.commands.registerCommand(
-      "mysqlWorkbench.addConnection",
-      async () => {
-        const result = await promptConnection();
-        if (result) {
-          await store.add(result.config, result.password);
-        }
-      },
-    ),
+    vscode.commands.registerCommand("mysqlWorkbench.addConnection", () => {
+      ConnectionManagerPanel.show(context, store, db);
+    }),
+
+    vscode.commands.registerCommand("mysqlWorkbench.manageConnections", () => {
+      ConnectionManagerPanel.show(context, store, db);
+    }),
 
     vscode.commands.registerCommand("mysqlWorkbench.refresh", () =>
       tree.refresh(),
@@ -36,15 +34,8 @@ export function activate(context: vscode.ExtensionContext): void {
 
     vscode.commands.registerCommand(
       "mysqlWorkbench.editConnection",
-      async (node?: ConnectionNode) => {
-        if (!node) {
-          return;
-        }
-        const result = await promptConnection(node.config);
-        if (result) {
-          await db.dispose(node.config.id);
-          await store.update(node.config.id, result.config, result.password);
-        }
+      (node?: ConnectionNode) => {
+        ConnectionManagerPanel.show(context, store, db, node?.config.id);
       },
     ),
 

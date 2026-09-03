@@ -60,6 +60,12 @@
         "icon": "$(add)"
       },
       {
+        "command": "mysqlWorkbench.manageConnections",
+        "title": "Manage Connections",
+        "category": "MySQL Workbench",
+        "icon": "$(gear)"
+      },
+      {
         "command": "mysqlWorkbench.refresh",
         "title": "Refresh",
         "category": "MySQL Workbench",
@@ -98,9 +104,14 @@
           "group": "navigation@1"
         },
         {
-          "command": "mysqlWorkbench.refresh",
+          "command": "mysqlWorkbench.manageConnections",
           "when": "view == mysqlWorkbench.connections",
           "group": "navigation@2"
+        },
+        {
+          "command": "mysqlWorkbench.refresh",
+          "when": "view == mysqlWorkbench.connections",
+          "group": "navigation@3"
         }
       ],
       "view/item/context": [
