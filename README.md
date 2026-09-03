@@ -26,6 +26,11 @@ as the **whole server**, the way a PHPStorm/DBeaver data source does.
   Results render in a **SQL Results** tab in the bottom panel, next to Terminal
   / Ports — the last query wins the shared panel. The grid is **sortable and
   resizable**, and results **export to CSV / JSON** (preview, copy, or save).
+- **Run a selection or a batch.** `Ctrl`/`Cmd`+`Enter` runs the selected text
+  if there is a selection, otherwise the whole editor. Multiple `;`-separated
+  statements run sequentially and **stop on the first error** (reporting which
+  statement failed); a batch shows an execution summary rather than a grid, so
+  it's ideal for DDL/DML scripts.
 - **Table preview.** Click a table in the tree to preview its rows.
 - **SSH tunnelling.** Connect through a bastion / jump host: toggle _Connect
   through an SSH tunnel_ and supply the SSH host/user + a private-key file
@@ -50,9 +55,11 @@ as the **whole server**, the way a PHPStorm/DBeaver data source does.
 3. Expand the connection in the tree to browse schemas → tables → columns, or
    click a table to preview its rows.
 4. Use **Open SQL Console** on a connection (or a schema) to open the editor,
-   write SQL, and run it with `Ctrl`/`Cmd`+`Enter`. Results appear in the **SQL
-   Results** panel. You can also run the active `.sql` file / selection via the
-   _Run Active SQL File / Selection_ command.
+   write SQL, and run it with `Ctrl`/`Cmd`+`Enter`. If you select text, only the
+   selection runs; several `;`-separated statements run as a batch (stopping on
+   the first error). Results appear in the **SQL Results** panel. You can also
+   run the active `.sql` file / selection via the _Run Active SQL File /
+   Selection_ command.
 
 ## Commands
 
@@ -104,8 +111,7 @@ in an issue — redact hosts and secrets before pasting logs or screenshots.
 
 ## Roadmap
 
-The initial release is read-only. Planned: query history, row editing, DDL
-view, and ER diagrams.
+Planned: query history, row editing, DDL view, and ER diagrams.
 
 ## License
 

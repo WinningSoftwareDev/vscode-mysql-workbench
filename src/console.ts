@@ -98,13 +98,14 @@ export class ConsolePanel {
     await this.results.running(this.config.name);
     const started = Date.now();
     try {
-      const result = await this.db.query(this.config, trimmed);
+      const result = await this.db.run(this.config, trimmed);
+      const ms = Date.now() - started;
       this.post({ type: "done" });
-      await this.results.showResult(
-        result,
-        this.config.name,
-        Date.now() - started,
-      );
+      if ("isBatch" in result) {
+        await this.results.showBatch(result, this.config.name, ms);
+      } else {
+        await this.results.showResult(result, this.config.name, ms);
+      }
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
       this.post({ type: "failed" });

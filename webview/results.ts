@@ -12,10 +12,20 @@ interface QueryResult {
   affectedRows?: number;
 }
 
+interface BatchResult {
+  isBatch: true;
+  statementsRun: number;
+  statementsTotal: number;
+  rowsAffected: number;
+  failedIndex?: number;
+  failedError?: string;
+}
+
 type InboundMessage =
   | { type: "reset" }
   | { type: "running"; label: string }
   | { type: "result"; result: QueryResult; label: string; ms: number }
+  | { type: "batch"; batch: BatchResult; label: string; ms: number }
   | { type: "error"; message: string; label: string };
 
 const vscodeApi = acquireVsCodeApi();
@@ -216,6 +226,43 @@ window.addEventListener("message", (event: MessageEvent<InboundMessage>) => {
       table = undefined;
     }
     gridEl.innerHTML = "";
+    return;
+  }
+  if (msg.type === "batch") {
+    const b = msg.batch;
+    if (table) {
+      table.destroy();
+      table = undefined;
+    }
+    gridEl.innerHTML = "";
+    setToolbarEnabled(false);
+    const prefix = msg.label ? msg.label + " — " : "";
+    if (b.failedIndex !== undefined) {
+      setMeta(
+        prefix +
+          "Statement " +
+          b.failedIndex +
+          " of " +
+          b.statementsTotal +
+          " failed: " +
+          (b.failedError ?? "") +
+          " — " +
+          b.statementsRun +
+          " statement(s) ran before the failure.",
+        "error",
+      );
+    } else {
+      setMeta(
+        prefix +
+          b.statementsRun +
+          " statement(s) executed successfully · " +
+          b.rowsAffected +
+          " row(s) affected · " +
+          msg.ms +
+          " ms",
+        "ok",
+      );
+    }
     return;
   }
   if (msg.type === "result") {

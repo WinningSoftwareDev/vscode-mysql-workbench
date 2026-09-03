@@ -1,10 +1,11 @@
 import * as vscode from "vscode";
-import { QueryResult } from "./db";
+import { BatchResult, QueryResult } from "./db";
 
 /** host -> results webview */
 type OutboundMessage =
   | { type: "running"; label: string }
   | { type: "result"; result: QueryResult; label: string; ms: number }
+  | { type: "batch"; batch: BatchResult; label: string; ms: number }
   | { type: "error"; message: string; label: string }
   | { type: "reset" };
 
@@ -103,6 +104,15 @@ export class ResultsView implements vscode.WebviewViewProvider {
   ): Promise<void> {
     await this.reveal();
     this.post({ type: "result", result, label, ms });
+  }
+
+  async showBatch(
+    batch: BatchResult,
+    label: string,
+    ms: number,
+  ): Promise<void> {
+    await this.reveal();
+    this.post({ type: "batch", batch, label, ms });
   }
 
   async showError(message: string, label: string): Promise<void> {

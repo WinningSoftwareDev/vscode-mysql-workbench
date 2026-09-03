@@ -2,6 +2,7 @@ import * as vscode from "vscode";
 import * as mysql from "mysql2/promise";
 import { ConnectionConfig, ConnectionStore } from "./connections";
 import { SshTunnel } from "./tunnel";
+import { splitStatements } from "./sqlsplit";
 
 export interface ColumnInfo {
   name: string;
@@ -22,6 +23,24 @@ export interface QueryResult {
   rows: Record<string, unknown>[];
   /** Rows affected, for non-SELECT statements. */
   affectedRows?: number;
+}
+
+/**
+ * Summary of a multi-statement batch. Batches don't return grids — they run
+ * DDL/DML sequentially and stop on the first error.
+ */
+export interface BatchResult {
+  isBatch: true;
+  /** How many statements ran successfully. */
+  statementsRun: number;
+  /** Total statements in the batch. */
+  statementsTotal: number;
+  /** Sum of affected rows across the statements that ran. */
+  rowsAffected: number;
+  /** 1-based index of the statement that failed (absent on full success). */
+  failedIndex?: number;
+  /** Error message from the failed statement. */
+  failedError?: string;
 }
 
 /**
@@ -238,5 +257,48 @@ export class DbManager {
 
     const header = result as mysql.ResultSetHeader;
     return { fields: [], rows: [], affectedRows: header.affectedRows };
+  }
+
+  /**
+   * Execute a console submission. A single statement returns a
+   * {@link QueryResult} (grid / affected rows). Multiple statements run
+   * sequentially, STOP on the first error, and return a {@link BatchResult}
+   * summary rather than any grid — batches are for DDL/DML, not viewing rows.
+   */
+  async run(
+    config: ConnectionConfig,
+    sql: string,
+  ): Promise<QueryResult | BatchResult> {
+    const statements = splitStatements(sql);
+    if (statements.length <= 1) {
+      // Zero statements (comment-only) still goes through query() harmlessly.
+      return this.query(config, statements[0] ?? sql);
+    }
+
+    let rowsAffected = 0;
+    for (let index = 0; index < statements.length; index++) {
+      try {
+        const r = await this.query(config, statements[index]);
+        if (typeof r.affectedRows === "number") {
+          rowsAffected += r.affectedRows;
+        }
+      } catch (err) {
+        const message = err instanceof Error ? err.message : String(err);
+        return {
+          isBatch: true,
+          statementsRun: index, // number that succeeded before this one
+          statementsTotal: statements.length,
+          rowsAffected,
+          failedIndex: index + 1, // 1-based for display
+          failedError: message,
+        };
+      }
+    }
+    return {
+      isBatch: true,
+      statementsRun: statements.length,
+      statementsTotal: statements.length,
+      rowsAffected,
+    };
   }
 }

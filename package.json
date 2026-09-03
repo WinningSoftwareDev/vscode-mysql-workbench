@@ -2,7 +2,7 @@
   "name": "burrow-db-client",
   "displayName": "Burrow DB Client",
   "description": "A MySQL/MariaDB client with whole-server schema browsing, an in-editor SQL console with the results in a panel, and SSH tunnelling. No connection limits.",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "publisher": "WinningSoftware",
   "license": "MIT",
   "repository": {

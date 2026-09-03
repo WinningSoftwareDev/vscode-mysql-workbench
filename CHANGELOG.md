@@ -3,7 +3,7 @@
 All notable changes to this extension are documented here. This project adheres
 to [Semantic Versioning](https://semver.org/).
 
-## [Unreleased]
+## [0.2.0] - 2026-09-03
 
 ### Added
 
@@ -13,6 +13,17 @@ to [Semantic Versioning](https://semver.org/).
 - **Export results to CSV / JSON.** Export buttons in the results panel open a
   preview of the current result set (respecting the active sort order) with
   **Copy to clipboard** and an optional **Save to file…** (native save dialog).
+
+### Fixed
+
+- **Multi-statement batches now execute.** A submission with more than one
+  `;`-separated statement runs each sequentially, **stopping on the first
+  error** (PHPStorm-style) and reporting which statement failed. Batches show
+  an execution summary (statements run · rows affected · time) rather than a
+  grid — intended for DDL/DML. A single statement still shows its grid.
+- **Selection-aware run.** `Ctrl`/`Cmd`+`Enter` in the SQL console now runs the
+  selected text when there is a selection, instead of always running the whole
+  buffer.
 
 ## [0.1.0] - 2026-09-03
 

@@ -142,8 +142,15 @@ new MutationObserver(applyTheme).observe(document.body, {
 });
 
 function run(): void {
-  const sql = editor.getValue();
-  vscodeApi.setState({ sql } satisfies ConsoleState);
+  // Run the selection if there is one, else the whole buffer — mirrors the
+  // "Run Active SQL File / Selection" command.
+  const model = editor.getModel();
+  const selection = editor.getSelection();
+  let sql = editor.getValue();
+  if (model && selection && !selection.isEmpty()) {
+    sql = model.getValueInRange(selection);
+  }
+  vscodeApi.setState({ sql: editor.getValue() } satisfies ConsoleState);
   vscodeApi.postMessage({ type: "run", sql });
 }
 
