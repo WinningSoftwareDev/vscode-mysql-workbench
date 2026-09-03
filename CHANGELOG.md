@@ -3,6 +3,15 @@
 All notable changes to this extension are documented here. This project adheres
 to [Semantic Versioning](https://semver.org/).
 
+## [0.3.0] - unreleased
+
+### Added
+
+- **SSL / TLS connections.** A connection can now use TLS: _Require_ (encrypt
+  without verifying the server certificate — the fix for servers like Amazon
+  RDS with `require_secure_transport = ON`) or _Verify CA_ (verify against a CA
+  bundle referenced by path). Configured per-connection in the manager.
+
 ## [0.2.0] - 2026-09-03
 
 ### Added

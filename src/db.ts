@@ -1,6 +1,7 @@
 import * as vscode from "vscode";
 import * as mysql from "mysql2/promise";
-import { ConnectionConfig, ConnectionStore } from "./connections";
+import * as fs from "fs/promises";
+import { ConnectionConfig, ConnectionStore, SslConfig } from "./connections";
 import { SshTunnel } from "./tunnel";
 import { splitStatements } from "./sqlsplit";
 
@@ -60,6 +61,32 @@ export class DbManager {
       .get<number>("connectTimeout", 10000);
   }
 
+  /**
+   * Map a connection's SSL config to mysql2's `ssl` option.
+   * - disabled / absent → undefined (plaintext).
+   * - require → encrypt but do not verify the server cert
+   *   (`rejectUnauthorized: false`) — matches "just works" TLS clients.
+   * - verify-ca → verify against the supplied CA bundle.
+   */
+  private async sslOptions(
+    ssl: SslConfig | undefined,
+  ): Promise<mysql.SslOptions | undefined> {
+    if (!ssl || ssl.mode === "disabled") {
+      return undefined;
+    }
+    if (ssl.mode === "require") {
+      return { rejectUnauthorized: false };
+    }
+    // verify-ca
+    if (!ssl.caPath) {
+      throw new Error(
+        "SSL mode is 'verify-ca' but no CA certificate path is set.",
+      );
+    }
+    const ca = await fs.readFile(ssl.caPath, "utf8");
+    return { ca, rejectUnauthorized: true };
+  }
+
   private async pool(config: ConnectionConfig): Promise<mysql.Pool> {
     const existing = this.pools.get(config.id);
     if (existing) {
@@ -91,6 +118,8 @@ export class DbManager {
       port = tunnel.localPort;
     }
 
+    const ssl = await this.sslOptions(config.ssl);
+
     const pool = mysql.createPool({
       host,
       port,
@@ -104,6 +133,7 @@ export class DbManager {
       connectionLimit: 4,
       multipleStatements: false,
       dateStrings: true,
+      ssl,
     });
     this.pools.set(config.id, pool);
     return pool;
@@ -211,6 +241,7 @@ export class DbManager {
     }
 
     try {
+      const ssl = await this.sslOptions(config.ssl);
       const conn = await mysql.createConnection({
         host,
         port,
@@ -219,6 +250,7 @@ export class DbManager {
         database: config.defaultSchema || undefined,
         connectTimeout,
         multipleStatements: false,
+        ssl,
       });
       try {
         await conn.query("SELECT 1");

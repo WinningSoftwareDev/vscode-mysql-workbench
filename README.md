@@ -37,6 +37,10 @@ as the **whole server**, the way a PHPStorm/DBeaver data source does.
   (path) and optional passphrase. The MySQL host/port are then interpreted as
   seen from the SSH host. The key stays on disk (only its path is stored); the
   passphrase goes in SecretStorage.
+- **SSL / TLS.** Choose a TLS mode per connection: _Require_ (encrypt without
+  verifying the certificate — matches the automatic TLS other clients use, and
+  is the fix for servers like Amazon RDS that mandate secure transport) or
+  _Verify CA_ (verify against a CA bundle referenced by path).
 
 ## Requirements
 

@@ -23,6 +23,10 @@
   const fSshKey = document.getElementById("f-ssh-key");
   const fSshPassphrase = document.getElementById("f-ssh-passphrase");
 
+  const fSslMode = document.getElementById("f-ssl-mode");
+  const sslCaField = document.getElementById("ssl-ca-field");
+  const fSslCa = document.getElementById("f-ssl-ca");
+
   const newBtn = document.getElementById("new-btn");
   const testBtn = document.getElementById("test-btn");
   const saveBtn = document.getElementById("save-btn");
@@ -74,6 +78,10 @@
     sshFields.hidden = !fSshEnabled.checked;
   }
 
+  function updateSslVisibility() {
+    sslCaField.hidden = fSslMode.value !== "verify-ca";
+  }
+
   function fillForm(c) {
     fId.value = c ? c.id : "";
     fName.value = c ? c.name : "";
@@ -94,6 +102,10 @@
     fSshPassphrase.placeholder =
       c && c.sshHasPassphrase ? "•••••••• (unchanged)" : "";
     updateSshVisibility();
+
+    fSslMode.value = c ? c.sslMode : "disabled";
+    fSslCa.value = c ? c.sslCaPath : "";
+    updateSslVisibility();
 
     // Editing an existing row: password blank = keep stored secret.
     passwordUntouched = !!c;
@@ -142,6 +154,8 @@
       sshPassphrase: fSshPassphrase.value,
       sshPassphraseUnchanged:
         passphraseUntouched && fSshPassphrase.value === "",
+      sslMode: fSslMode.value,
+      sslCaPath: fSslCa.value,
     };
   }
 
@@ -154,6 +168,7 @@
   });
 
   fSshEnabled.addEventListener("change", updateSshVisibility);
+  fSslMode.addEventListener("change", updateSslVisibility);
 
   newBtn.addEventListener("click", startNew);
 

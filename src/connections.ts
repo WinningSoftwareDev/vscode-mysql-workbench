@@ -20,6 +20,21 @@ export interface SshConfig {
 }
 
 /**
+ * SSL/TLS settings for the MySQL connection itself (independent of any SSH
+ * tunnel). Many managed servers (e.g. Amazon RDS with
+ * `require_secure_transport = ON`) mandate TLS; without it the server rejects
+ * the login, often as a misleading "Access denied". The CA is referenced by
+ * PATH (never copied into storage), consistent with the SSH key.
+ */
+export type SslMode = "disabled" | "require" | "verify-ca";
+
+export interface SslConfig {
+  mode: SslMode;
+  /** Absolute path to a CA bundle (PEM). Only used in verify-ca mode. */
+  caPath?: string;
+}
+
+/**
  * Connection metadata persisted in globalState. The password is NEVER stored
  * here — it lives in SecretStorage keyed by {@link secretKey}.
  */
@@ -37,6 +52,8 @@ export interface ConnectionConfig {
   defaultSchema?: string;
   /** Optional SSH tunnel. When absent or disabled, connect directly. */
   ssh?: SshConfig;
+  /** Optional SSL/TLS. When absent, treated as disabled (plaintext). */
+  ssl?: SslConfig;
 }
 
 const STORAGE_KEY = "burrowDbClient.connections";

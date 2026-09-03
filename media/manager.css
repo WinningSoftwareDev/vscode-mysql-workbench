@@ -267,6 +267,39 @@ label {
   margin: 0;
 }
 
+.ssl-section {
+  border-top: 1px solid var(--vscode-panel-border);
+  padding-top: var(--mw-gap);
+  display: flex;
+  flex-direction: column;
+  gap: var(--mw-gap);
+}
+
+.ssl-note {
+  margin: 0;
+}
+
+select {
+  box-sizing: border-box;
+  width: 100%;
+  padding: 8px 10px;
+  color: var(--vscode-input-foreground);
+  background: var(--vscode-input-background);
+  border: 1px solid var(--vscode-input-border, var(--vscode-panel-border));
+  border-radius: var(--mw-radius-sm);
+  outline: none;
+  font-size: 0.95em;
+  font-family: inherit;
+}
+
+select:focus {
+  border-color: var(--vscode-focusBorder);
+}
+
+#ssl-ca-field[hidden] {
+  display: none;
+}
+
 input {
   box-sizing: border-box;
   width: 100%;

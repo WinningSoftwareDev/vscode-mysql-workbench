@@ -16,6 +16,8 @@ interface ConnectionView {
   sshUser: string;
   sshPrivateKeyPath: string;
   sshHasPassphrase: boolean;
+  sslMode: "disabled" | "require" | "verify-ca";
+  sslCaPath: string;
 }
 
 /** webview -> host */
@@ -51,6 +53,8 @@ interface FormPayload {
   sshPassphrase: string;
   /** On edit: true means the passphrase box was left blank (keep stored). */
   sshPassphraseUnchanged: boolean;
+  sslMode: "disabled" | "require" | "verify-ca";
+  sslCaPath: string;
 }
 
 function toView(c: ConnectionConfig): ConnectionView {
@@ -67,6 +71,8 @@ function toView(c: ConnectionConfig): ConnectionView {
     sshUser: c.ssh?.user ?? "",
     sshPrivateKeyPath: c.ssh?.privateKeyPath ?? "",
     sshHasPassphrase: c.ssh?.hasPassphrase ?? false,
+    sslMode: c.ssl?.mode ?? "disabled",
+    sslCaPath: c.ssl?.caPath ?? "",
   };
 }
 
@@ -239,6 +245,32 @@ export class ConnectionManagerPanel {
     return null;
   }
 
+  /** Build the persisted SslConfig from the form, or undefined when disabled. */
+  private buildSsl(
+    form: FormPayload,
+  ):
+    | { mode: "disabled" | "require" | "verify-ca"; caPath?: string }
+    | undefined {
+    if (form.sslMode === "disabled") {
+      return undefined;
+    }
+    return {
+      mode: form.sslMode,
+      caPath:
+        form.sslMode === "verify-ca"
+          ? form.sslCaPath.trim() || undefined
+          : undefined,
+    };
+  }
+
+  /** Returns an error string if SSL is misconfigured, else null. */
+  private validateSsl(form: FormPayload): string | null {
+    if (form.sslMode === "verify-ca" && !form.sslCaPath.trim()) {
+      return "SSL mode 'Verify CA' requires a CA certificate path.";
+    }
+    return null;
+  }
+
   private async handleTest(form: FormPayload): Promise<void> {
     const port = this.parsePort(form.port);
     if (!form.host.trim() || port === undefined || !form.user.trim()) {
@@ -254,6 +286,11 @@ export class ConnectionManagerPanel {
       this.post({ type: "testResult", ok: false, message: sshError });
       return;
     }
+    const sslError = this.validateSsl(form);
+    if (sslError) {
+      this.post({ type: "testResult", ok: false, message: sslError });
+      return;
+    }
     try {
       const password = await this.resolvePassword(form);
       const sshPassphrase = await this.resolveSshPassphrase(form);
@@ -265,6 +302,7 @@ export class ConnectionManagerPanel {
           user: form.user.trim(),
           defaultSchema: form.defaultSchema.trim() || undefined,
           ssh: this.buildSsh(form),
+          ssl: this.buildSsl(form),
         },
         password,
         sshPassphrase,
@@ -303,6 +341,11 @@ export class ConnectionManagerPanel {
       this.post({ type: "testResult", ok: false, message: sshError });
       return;
     }
+    const sslError = this.validateSsl(form);
+    if (sslError) {
+      this.post({ type: "testResult", ok: false, message: sslError });
+      return;
+    }
 
     const config = {
       name: form.name.trim(),
@@ -311,6 +354,7 @@ export class ConnectionManagerPanel {
       user: form.user.trim(),
       defaultSchema: form.defaultSchema.trim() || undefined,
       ssh: this.buildSsh(form),
+      ssl: this.buildSsl(form),
     };
 
     // Persist a new passphrase only when the user typed one.
@@ -441,6 +485,24 @@ export class ConnectionManagerPanel {
                   <input id="f-ssh-passphrase" type="password" />
                 </label>
               </div>
+            </div>
+
+            <div class="ssl-section">
+              <label>SSL / TLS
+                <select id="f-ssl-mode">
+                  <option value="disabled">Disabled (plaintext)</option>
+                  <option value="require">Require (encrypt, don't verify)</option>
+                  <option value="verify-ca">Verify CA certificate</option>
+                </select>
+              </label>
+              <p class="hint ssl-note">
+                Managed servers such as Amazon RDS may require TLS. "Require"
+                encrypts without verifying the server certificate — the usual
+                fix when a connection works elsewhere but is refused here.
+              </p>
+              <label id="ssl-ca-field" hidden>CA certificate path
+                <input id="f-ssl-ca" type="text" placeholder="/abs/path/to/rds-ca-bundle.pem" />
+              </label>
             </div>
 
             <div id="status" class="status"></div>
