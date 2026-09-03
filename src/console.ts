@@ -1,17 +1,17 @@
 import * as vscode from "vscode";
 import { ConnectionConfig } from "./connections";
-import { DbManager, QueryResult } from "./db";
+import { DbManager } from "./db";
+import { ResultsView } from "./results";
 
-/** host -> webview */
+/** host -> console webview (editor-side status only) */
 type OutboundMessage =
-  | { type: "running"; sql: string }
-  | { type: "result"; result: QueryResult; sql: string; ms: number }
-  | { type: "error"; message: string; sql: string };
+  { type: "running" } | { type: "done" } | { type: "failed" };
 
 /**
- * One SQL console + results grid, bound to a connection. Not bound to a single
- * schema, so cross-schema queries work. The webview only ever receives
- * serialisable rows — never credentials or a live connection.
+ * A SQL editor (Monaco), bound to a connection, hosted in the editor area.
+ * Running a query sends its results to the shared ResultsView in the panel —
+ * the editor itself only shows lightweight status. Not bound to a single
+ * schema, so cross-schema queries work.
  */
 export class ConsolePanel {
   private static readonly panels = new Map<string, ConsolePanel>();
@@ -19,6 +19,7 @@ export class ConsolePanel {
   static show(
     context: vscode.ExtensionContext,
     db: DbManager,
+    results: ResultsView,
     config: ConnectionConfig,
     schema?: string,
   ): ConsolePanel {
@@ -28,7 +29,7 @@ export class ConsolePanel {
       existing.panel.reveal();
       return existing;
     }
-    const created = new ConsolePanel(context, db, config, schema);
+    const created = new ConsolePanel(context, db, results, config, schema);
     ConsolePanel.panels.set(key, created);
     return created;
   }
@@ -39,6 +40,7 @@ export class ConsolePanel {
   private constructor(
     private readonly context: vscode.ExtensionContext,
     private readonly db: DbManager,
+    private readonly results: ResultsView,
     private readonly config: ConnectionConfig,
     schema?: string,
   ) {
@@ -92,19 +94,21 @@ export class ConsolePanel {
     if (trimmed === "") {
       return;
     }
-    this.post({ type: "running", sql: trimmed });
+    this.post({ type: "running" });
+    await this.results.running(this.config.name);
     const started = Date.now();
     try {
       const result = await this.db.query(this.config, trimmed);
-      this.post({
-        type: "result",
+      this.post({ type: "done" });
+      await this.results.showResult(
         result,
-        sql: trimmed,
-        ms: Date.now() - started,
-      });
+        this.config.name,
+        Date.now() - started,
+      );
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
-      this.post({ type: "error", message, sql: trimmed });
+      this.post({ type: "failed" });
+      await this.results.showError(message, this.config.name);
     }
   }
 
@@ -166,11 +170,9 @@ export class ConsolePanel {
 <body>
   <div id="toolbar">
     <span id="status">Ready — ${escapeHtml(this.config.name)}</span>
-    <span id="hint">Ctrl/Cmd+Enter to run</span>
+    <span id="hint">Ctrl/Cmd+Enter to run · results appear in the SQL Results panel</span>
   </div>
   <div id="editor"></div>
-  <div id="meta"></div>
-  <div id="grid"></div>
   <script nonce="${nonce}">window.MONACO_WORKER_URI = "${workerUri}";</script>
   <script nonce="${nonce}" src="${scriptUri}"></script>
 </body>

@@ -20,9 +20,11 @@ as the **whole server**, the way a PHPStorm/DBeaver data source does.
   `settings.json`.
 - **Whole-server browsing.** Leave the database field blank and the connection
   lists every schema → table → column. Cross-schema `JOIN`s work.
-- **SQL console + results grid.** Run a statement (or the active `.sql` file /
-  selection) and see rows in a sortable, theme-aware grid. `Ctrl`/`Cmd`+`Enter`
-  runs.
+- **SQL console + results grid.** The SQL editor (Monaco, syntax-highlighted)
+  opens in the editor area, one per connection; run a statement (or the active
+  `.sql` file / selection) with `Ctrl`/`Cmd`+`Enter`. Results appear in the
+  **SQL Results** tab in the bottom panel, next to Terminal / Ports — the
+  editor stays roomy and the last query wins the panel.
 - **Table preview.** Click a table in the tree to preview its rows.
 - **SSH tunnelling.** Connect through a bastion/jump host: toggle _Connect
   through an SSH tunnel_ and supply the SSH host/user + a private-key file

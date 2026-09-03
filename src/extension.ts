@@ -9,14 +9,19 @@ import {
 } from "./tree";
 import { ConnectionManagerPanel } from "./manager";
 import { ConsolePanel } from "./console";
+import { ResultsView, RESULTS_VIEW_ID } from "./results";
 
 export function activate(context: vscode.ExtensionContext): void {
   const store = new ConnectionStore(context);
   const db = new DbManager(store);
   const tree = new ConnectionTreeProvider(store, db);
+  const results = new ResultsView(context);
 
   context.subscriptions.push(
     vscode.window.registerTreeDataProvider("mysqlWorkbench.connections", tree),
+    vscode.window.registerWebviewViewProvider(RESULTS_VIEW_ID, results, {
+      webviewOptions: { retainContextWhenHidden: true },
+    }),
   );
 
   context.subscriptions.push(
@@ -64,7 +69,7 @@ export function activate(context: vscode.ExtensionContext): void {
           return;
         }
         const schema = node instanceof SchemaNode ? node.schema : undefined;
-        ConsolePanel.show(context, db, node.config, schema);
+        ConsolePanel.show(context, db, results, node.config, schema);
       },
     ),
 
@@ -78,7 +83,7 @@ export function activate(context: vscode.ExtensionContext): void {
           .getConfiguration("mysqlWorkbench")
           .get<number>("queryRowLimit", 500);
         const clause = limit && limit > 0 ? ` LIMIT ${limit}` : "";
-        const panel = ConsolePanel.show(context, db, node.config);
+        const panel = ConsolePanel.show(context, db, results, node.config);
         panel.run(
           `SELECT * FROM \`${node.schema}\`.\`${node.table}\`${clause};`,
         );
@@ -116,7 +121,7 @@ export function activate(context: vscode.ExtensionContext): void {
         if (!picked) {
           return;
         }
-        ConsolePanel.show(context, db, picked).run(sql);
+        ConsolePanel.show(context, db, results, picked).run(sql);
       },
     ),
   );

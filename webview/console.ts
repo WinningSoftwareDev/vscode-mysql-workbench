@@ -14,16 +14,8 @@ self.MonacoEnvironment = {
   },
 };
 
-interface QueryResult {
-  fields: string[];
-  rows: Record<string, unknown>[];
-  affectedRows?: number;
-}
-
 type InboundMessage =
-  | { type: "running"; sql: string }
-  | { type: "result"; result: QueryResult; sql: string; ms: number }
-  | { type: "error"; message: string; sql: string };
+  { type: "running" } | { type: "done" } | { type: "failed" };
 
 interface ConsoleState {
   sql: string;
@@ -39,8 +31,6 @@ function byId(id: string): HTMLElement {
   return el;
 }
 
-const gridEl = byId("grid");
-const metaEl = byId("meta");
 const statusEl = byId("status");
 const editorEl = byId("editor");
 
@@ -159,74 +149,18 @@ function run(): void {
 
 editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.Enter, run);
 
-function escapeHtml(value: unknown): string {
-  return String(value)
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;");
-}
-
-function renderCell(value: unknown): string {
-  if (value === null || value === undefined) {
-    return '<span class="null">NULL</span>';
-  }
-  if (typeof value === "object") {
-    return escapeHtml(JSON.stringify(value));
-  }
-  return escapeHtml(value);
-}
-
-function renderGrid(result: QueryResult): void {
-  if (!result.fields.length) {
-    gridEl.innerHTML = "";
-    return;
-  }
-  const head =
-    "<thead><tr>" +
-    result.fields.map((f) => "<th>" + escapeHtml(f) + "</th>").join("") +
-    "</tr></thead>";
-  const body =
-    "<tbody>" +
-    result.rows
-      .map(
-        (row) =>
-          "<tr>" +
-          result.fields
-            .map((f) => "<td>" + renderCell(row[f]) + "</td>")
-            .join("") +
-          "</tr>",
-      )
-      .join("") +
-    "</tbody>";
-  gridEl.innerHTML = "<table>" + head + body + "</table>";
-}
-
 window.addEventListener("message", (event: MessageEvent<InboundMessage>) => {
   const msg = event.data;
   if (msg.type === "running") {
     statusEl.textContent = "Running…";
-    metaEl.textContent = "";
-    gridEl.innerHTML = "";
     return;
   }
-  if (msg.type === "error") {
-    statusEl.textContent = "Error";
-    metaEl.innerHTML =
-      '<span class="error">' + escapeHtml(msg.message) + "</span>";
-    gridEl.innerHTML = "";
+  if (msg.type === "failed") {
+    statusEl.textContent = "Error — see SQL Results panel";
     return;
   }
-  if (msg.type === "result") {
+  if (msg.type === "done") {
     statusEl.textContent = "Ready";
-    if (typeof msg.result.affectedRows === "number") {
-      metaEl.textContent =
-        msg.result.affectedRows + " row(s) affected · " + msg.ms + " ms";
-      gridEl.innerHTML = "";
-    } else {
-      metaEl.textContent =
-        msg.result.rows.length + " row(s) · " + msg.ms + " ms";
-      renderGrid(msg.result);
-    }
+    return;
   }
 });

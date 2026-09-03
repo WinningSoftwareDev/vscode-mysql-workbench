@@ -36,6 +36,13 @@
           "title": "MySQL Workbench",
           "icon": "resources/database.svg"
         }
+      ],
+      "panel": [
+        {
+          "id": "mysqlWorkbenchPanel",
+          "title": "SQL Results",
+          "icon": "resources/database.svg"
+        }
       ]
     },
     "views": {
@@ -43,6 +50,13 @@
         {
           "id": "mysqlWorkbench.connections",
           "name": "Connections"
+        }
+      ],
+      "mysqlWorkbenchPanel": [
+        {
+          "id": "mysqlWorkbench.results",
+          "name": "Results",
+          "type": "webview"
         }
       ]
     },
