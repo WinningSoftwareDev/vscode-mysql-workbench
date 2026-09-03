@@ -1,5 +1,7 @@
 # MySQL Workbench (VS Code)
 
+A 100% free database connection manager for VS Code.
+
 Add MySQL/MariaDB connections, browse **every** schema and table in a
 connection, and run SQL with the results in a dedicated panel — all inside the
 editor. No artificial connection limits and no paid tier.
