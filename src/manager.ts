@@ -10,6 +10,12 @@ interface ConnectionView {
   port: number;
   user: string;
   defaultSchema: string;
+  sshEnabled: boolean;
+  sshHost: string;
+  sshPort: number;
+  sshUser: string;
+  sshPrivateKeyPath: string;
+  sshHasPassphrase: boolean;
 }
 
 /** webview -> host */
@@ -37,6 +43,14 @@ interface FormPayload {
   /** Only meaningful on edit: true means the password box was left blank. */
   passwordUnchanged: boolean;
   defaultSchema: string;
+  sshEnabled: boolean;
+  sshHost: string;
+  sshPort: string;
+  sshUser: string;
+  sshPrivateKeyPath: string;
+  sshPassphrase: string;
+  /** On edit: true means the passphrase box was left blank (keep stored). */
+  sshPassphraseUnchanged: boolean;
 }
 
 function toView(c: ConnectionConfig): ConnectionView {
@@ -47,6 +61,12 @@ function toView(c: ConnectionConfig): ConnectionView {
     port: c.port,
     user: c.user,
     defaultSchema: c.defaultSchema ?? "",
+    sshEnabled: c.ssh?.enabled ?? false,
+    sshHost: c.ssh?.host ?? "",
+    sshPort: c.ssh?.port ?? 22,
+    sshUser: c.ssh?.user ?? "",
+    sshPrivateKeyPath: c.ssh?.privateKeyPath ?? "",
+    sshHasPassphrase: c.ssh?.hasPassphrase ?? false,
   };
 }
 
@@ -160,6 +180,65 @@ export class ConnectionManagerPanel {
     return form.password;
   }
 
+  /** Resolve the SSH passphrase to send to test(): typed value, or the stored
+   * one when editing and the box was left blank. */
+  private async resolveSshPassphrase(
+    form: FormPayload,
+  ): Promise<string | undefined> {
+    if (!form.sshEnabled) {
+      return undefined;
+    }
+    if (form.sshPassphraseUnchanged && form.id) {
+      return (await this.store.getSshPassphrase(form.id)) ?? undefined;
+    }
+    return form.sshPassphrase || undefined;
+  }
+
+  /** Build the persisted SshConfig (no secrets) from the form, or undefined. */
+  private buildSsh(form: FormPayload):
+    | {
+        enabled: boolean;
+        host: string;
+        port: number;
+        user: string;
+        privateKeyPath: string;
+        hasPassphrase: boolean;
+      }
+    | undefined {
+    if (!form.sshEnabled) {
+      return undefined;
+    }
+    const sshPort = Number.parseInt(form.sshPort, 10);
+    const hasPassphrase =
+      (form.sshPassphraseUnchanged && !!form.id) || !!form.sshPassphrase;
+    return {
+      enabled: true,
+      host: form.sshHost.trim(),
+      port:
+        Number.isNaN(sshPort) || sshPort <= 0 || sshPort > 65535 ? 22 : sshPort,
+      user: form.sshUser.trim(),
+      privateKeyPath: form.sshPrivateKeyPath.trim(),
+      hasPassphrase,
+    };
+  }
+
+  /** Returns an error string if SSH is enabled but incomplete, else null. */
+  private validateSsh(form: FormPayload): string | null {
+    if (!form.sshEnabled) {
+      return null;
+    }
+    if (!form.sshHost.trim()) {
+      return "SSH host is required.";
+    }
+    if (!form.sshUser.trim()) {
+      return "SSH user is required.";
+    }
+    if (!form.sshPrivateKeyPath.trim()) {
+      return "SSH private key path is required.";
+    }
+    return null;
+  }
+
   private async handleTest(form: FormPayload): Promise<void> {
     const port = this.parsePort(form.port);
     if (!form.host.trim() || port === undefined || !form.user.trim()) {
@@ -170,8 +249,14 @@ export class ConnectionManagerPanel {
       });
       return;
     }
+    const sshError = this.validateSsh(form);
+    if (sshError) {
+      this.post({ type: "testResult", ok: false, message: sshError });
+      return;
+    }
     try {
       const password = await this.resolvePassword(form);
+      const sshPassphrase = await this.resolveSshPassphrase(form);
       const { serverVersion } = await this.db.test(
         {
           name: form.name.trim() || "test",
@@ -179,8 +264,10 @@ export class ConnectionManagerPanel {
           port,
           user: form.user.trim(),
           defaultSchema: form.defaultSchema.trim() || undefined,
+          ssh: this.buildSsh(form),
         },
         password,
+        sshPassphrase,
       );
       this.post({
         type: "testResult",
@@ -211,6 +298,11 @@ export class ConnectionManagerPanel {
       });
       return;
     }
+    const sshError = this.validateSsh(form);
+    if (sshError) {
+      this.post({ type: "testResult", ok: false, message: sshError });
+      return;
+    }
 
     const config = {
       name: form.name.trim(),
@@ -218,16 +310,27 @@ export class ConnectionManagerPanel {
       port,
       user: form.user.trim(),
       defaultSchema: form.defaultSchema.trim() || undefined,
+      ssh: this.buildSsh(form),
     };
+
+    // Persist a new passphrase only when the user typed one.
+    const sshPassphrase =
+      form.sshEnabled && !form.sshPassphraseUnchanged
+        ? form.sshPassphrase
+        : undefined;
 
     if (form.id) {
       // On edit, only overwrite the password when the user typed a new one.
       const password = form.passwordUnchanged ? undefined : form.password;
       await this.db.dispose(form.id);
-      await this.store.update(form.id, config, password);
+      await this.store.update(form.id, config, password, sshPassphrase);
       this.post({ type: "saved", id: form.id });
     } else {
-      const created = await this.store.add(config, form.password);
+      const created = await this.store.add(
+        config,
+        form.password,
+        sshPassphrase,
+      );
       this.post({ type: "saved", id: created.id });
       this.postList(created.id);
     }
@@ -315,6 +418,31 @@ export class ConnectionManagerPanel {
             <label>Default schema <span class="hint">(optional — blank browses all schemas)</span>
               <input id="f-schema" type="text" placeholder="leave blank for the whole server" />
             </label>
+
+            <div class="ssh-section">
+              <label class="toggle">
+                <input id="f-ssh-enabled" type="checkbox" />
+                <span>Connect through an SSH tunnel</span>
+              </label>
+              <div id="ssh-fields" class="ssh-fields" hidden>
+                <p class="hint ssh-note">
+                  The MySQL host/port above are interpreted as seen FROM the SSH
+                  host (often 127.0.0.1:3306 on the bastion).
+                </p>
+                <div class="row">
+                  <label class="grow">SSH host<input id="f-ssh-host" type="text" placeholder="bastion.example.com" /></label>
+                  <label class="port">SSH port<input id="f-ssh-port" type="text" value="22" /></label>
+                </div>
+                <label>SSH user<input id="f-ssh-user" type="text" /></label>
+                <label>Private key path
+                  <input id="f-ssh-key" type="text" placeholder="~/.ssh/id_ed25519 or /abs/path/to/key" />
+                </label>
+                <label>Key passphrase <span class="hint">(if the key is encrypted)</span>
+                  <input id="f-ssh-passphrase" type="password" />
+                </label>
+              </div>
+            </div>
+
             <div id="status" class="status"></div>
           </div>
           <footer class="card-foot">

@@ -24,6 +24,11 @@ as the **whole server**, the way a PHPStorm/DBeaver data source does.
   selection) and see rows in a sortable, theme-aware grid. `Ctrl`/`Cmd`+`Enter`
   runs.
 - **Table preview.** Click a table in the tree to preview its rows.
+- **SSH tunnelling.** Connect through a bastion/jump host: toggle _Connect
+  through an SSH tunnel_ and supply the SSH host/user + a private-key file
+  (path) and optional passphrase. The MySQL host/port are then interpreted as
+  seen from the SSH host. The key stays on disk (only its path is stored); the
+  passphrase goes in SecretStorage.
 
 ## Usage
 

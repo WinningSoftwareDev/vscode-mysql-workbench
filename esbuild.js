@@ -14,7 +14,11 @@ const extensionConfig = {
   sourcesContent: false,
   platform: "node",
   outfile: "dist/extension.js",
-  external: ["vscode"],
+  // `vscode` is provided by the host. `ssh2` is kept external because it ships
+  // an optional native addon (sshcrypto.node) that esbuild cannot bundle; it
+  // is shipped in node_modules instead (see .vscodeignore). mysql2 is pure JS
+  // and bundles fine.
+  external: ["vscode", "ssh2", "cpu-features"],
   logLevel: "silent",
   plugins: [problemMatcher("extension")],
 };

@@ -1,5 +1,6 @@
 .vscode/**
 src/**
+webview/**
 node_modules/**
 .gitignore
 .prettierrc.json
@@ -7,5 +8,21 @@ node_modules/**
 eslint.config.js
 esbuild.js
 tsconfig.json
+tsconfig.webview.json
 **/*.map
 **/*.ts
+
+# ssh2 is kept external from the bundle (it has an optional native addon that
+# cannot be bundled), so its pure-JS runtime subtree must ship. Re-include it
+# and its runtime deps; the optional native crypto addon (cpu-features/nan) is
+# intentionally left out — ssh2 falls back to pure-JS crypto without it.
+!node_modules/ssh2/**
+!node_modules/asn1/**
+!node_modules/safer-buffer/**
+!node_modules/bcrypt-pbkdf/**
+!node_modules/tweetnacl/**
+node_modules/ssh2/**/*.node
+node_modules/**/build/**
+node_modules/**/*.map
+node_modules/**/test/**
+node_modules/**/*.md

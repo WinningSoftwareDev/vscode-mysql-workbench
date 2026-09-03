@@ -15,6 +15,14 @@
   const fPassword = document.getElementById("f-password");
   const fSchema = document.getElementById("f-schema");
 
+  const fSshEnabled = document.getElementById("f-ssh-enabled");
+  const sshFields = document.getElementById("ssh-fields");
+  const fSshHost = document.getElementById("f-ssh-host");
+  const fSshPort = document.getElementById("f-ssh-port");
+  const fSshUser = document.getElementById("f-ssh-user");
+  const fSshKey = document.getElementById("f-ssh-key");
+  const fSshPassphrase = document.getElementById("f-ssh-passphrase");
+
   const newBtn = document.getElementById("new-btn");
   const testBtn = document.getElementById("test-btn");
   const saveBtn = document.getElementById("save-btn");
@@ -25,6 +33,7 @@
   // True while editing an existing connection and the password box is
   // untouched — signals the host to keep the stored secret.
   let passwordUntouched = false;
+  let passphraseUntouched = false;
 
   function setStatus(text, kind) {
     statusEl.textContent = text || "";
@@ -61,6 +70,10 @@
     });
   }
 
+  function updateSshVisibility() {
+    sshFields.hidden = !fSshEnabled.checked;
+  }
+
   function fillForm(c) {
     fId.value = c ? c.id : "";
     fName.value = c ? c.name : "";
@@ -69,6 +82,19 @@
     fUser.value = c ? c.user : "root";
     fPassword.value = "";
     fSchema.value = c ? c.defaultSchema : "";
+
+    fSshEnabled.checked = c ? c.sshEnabled : false;
+    fSshHost.value = c ? c.sshHost : "";
+    fSshPort.value = c ? String(c.sshPort || 22) : "22";
+    fSshUser.value = c ? c.sshUser : "";
+    fSshKey.value = c ? c.sshPrivateKeyPath : "";
+    fSshPassphrase.value = "";
+    // Editing with a stored passphrase: blank box = keep it.
+    passphraseUntouched = !!c && !!c.sshHasPassphrase;
+    fSshPassphrase.placeholder =
+      c && c.sshHasPassphrase ? "•••••••• (unchanged)" : "";
+    updateSshVisibility();
+
     // Editing an existing row: password blank = keep stored secret.
     passwordUntouched = !!c;
     fPassword.placeholder = c ? "•••••••• (unchanged)" : "";
@@ -108,12 +134,26 @@
       password: fPassword.value,
       passwordUnchanged: passwordUntouched && fPassword.value === "",
       defaultSchema: fSchema.value,
+      sshEnabled: fSshEnabled.checked,
+      sshHost: fSshHost.value,
+      sshPort: fSshPort.value,
+      sshUser: fSshUser.value,
+      sshPrivateKeyPath: fSshKey.value,
+      sshPassphrase: fSshPassphrase.value,
+      sshPassphraseUnchanged:
+        passphraseUntouched && fSshPassphrase.value === "",
     };
   }
 
   fPassword.addEventListener("input", function () {
     passwordUntouched = false;
   });
+
+  fSshPassphrase.addEventListener("input", function () {
+    passphraseUntouched = false;
+  });
+
+  fSshEnabled.addEventListener("change", updateSshVisibility);
 
   newBtn.addEventListener("click", startNew);
 

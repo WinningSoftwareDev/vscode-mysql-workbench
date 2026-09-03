@@ -228,6 +228,45 @@ label {
   font-weight: normal;
 }
 
+.ssh-section {
+  border-top: 1px solid var(--vscode-panel-border);
+  padding-top: var(--mw-gap);
+  display: flex;
+  flex-direction: column;
+  gap: var(--mw-gap);
+}
+
+.toggle {
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.toggle input {
+  width: auto;
+  margin: 0;
+}
+
+.ssh-fields {
+  display: flex;
+  flex-direction: column;
+  gap: var(--mw-gap);
+  padding-left: 4px;
+  border-left: 2px solid var(--vscode-focusBorder);
+  padding-left: 14px;
+  margin-left: 2px;
+}
+
+.ssh-fields[hidden] {
+  display: none;
+}
+
+.ssh-note {
+  margin: 0;
+}
+
 input {
   box-sizing: border-box;
   width: 100%;
