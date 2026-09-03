@@ -29,16 +29,9 @@ body {
 
 #editor {
   width: 100%;
-  box-sizing: border-box;
+  height: 180px;
   min-height: 120px;
-  resize: vertical;
-  border: none;
-  outline: none;
-  padding: 10px;
-  color: var(--vscode-editor-foreground);
-  background: var(--vscode-editor-background);
-  font-family: var(--vscode-editor-font-family, monospace);
-  font-size: var(--vscode-editor-font-size, 13px);
+  border-bottom: 1px solid var(--vscode-panel-border);
 }
 
 #meta {

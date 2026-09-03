@@ -119,15 +119,37 @@ export class ConsolePanel {
   private html(webview: vscode.Webview): string {
     const nonce = getNonce();
     const scriptUri = webview.asWebviewUri(
-      vscode.Uri.joinPath(this.context.extensionUri, "media", "console.js"),
+      vscode.Uri.joinPath(
+        this.context.extensionUri,
+        "media",
+        "console.bundle.js",
+      ),
+    );
+    const workerUri = webview.asWebviewUri(
+      vscode.Uri.joinPath(
+        this.context.extensionUri,
+        "media",
+        "editor.worker.js",
+      ),
     );
     const styleUri = webview.asWebviewUri(
       vscode.Uri.joinPath(this.context.extensionUri, "media", "console.css"),
     );
+    const monacoStyleUri = webview.asWebviewUri(
+      vscode.Uri.joinPath(
+        this.context.extensionUri,
+        "media",
+        "console.bundle.css",
+      ),
+    );
+    // Monaco injects <style> tags at runtime (so style-src needs
+    // 'unsafe-inline') and spins up a Web Worker from our bundled worker
+    // (worker-src). Everything else stays locked down.
     const csp = [
       `default-src 'none'`,
-      `style-src ${webview.cspSource}`,
+      `style-src ${webview.cspSource} 'unsafe-inline'`,
       `script-src 'nonce-${nonce}'`,
+      `worker-src ${webview.cspSource} blob:`,
       `font-src ${webview.cspSource}`,
     ].join("; ");
 
@@ -137,6 +159,7 @@ export class ConsolePanel {
   <meta charset="UTF-8" />
   <meta http-equiv="Content-Security-Policy" content="${csp}" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link href="${monacoStyleUri}" rel="stylesheet" />
   <link href="${styleUri}" rel="stylesheet" />
   <title>SQL Console</title>
 </head>
@@ -145,9 +168,10 @@ export class ConsolePanel {
     <span id="status">Ready — ${escapeHtml(this.config.name)}</span>
     <span id="hint">Ctrl/Cmd+Enter to run</span>
   </div>
-  <textarea id="editor" spellcheck="false" placeholder="SELECT * FROM information_schema.schemata;"></textarea>
+  <div id="editor"></div>
   <div id="meta"></div>
   <div id="grid"></div>
+  <script nonce="${nonce}">window.MONACO_WORKER_URI = "${workerUri}";</script>
   <script nonce="${nonce}" src="${scriptUri}"></script>
 </body>
 </html>`;

@@ -4,7 +4,7 @@ const prettier = require("eslint-config-prettier");
 
 module.exports = [
   {
-    files: ["src/**/*.ts"],
+    files: ["src/**/*.ts", "webview/**/*.ts"],
     languageOptions: {
       parser: tsparser,
       ecmaVersion: 2022,
