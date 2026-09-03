@@ -1,7 +1,7 @@
 {
-  "name": "mysql-workbench",
-  "displayName": "MySQL Workbench",
-  "description": "Add MySQL connections, browse every schema/table in a connection, and run SQL in a console with a results grid. No connection limits.",
+  "name": "burrow-db-client",
+  "displayName": "Burrow DB Client",
+  "description": "A MySQL/MariaDB client with whole-server schema browsing, an in-editor SQL console with the results in a panel, and SSH tunnelling. No connection limits.",
   "version": "0.1.0",
   "publisher": "WinningSoftware",
   "license": "MIT",
@@ -25,37 +25,38 @@
     "mariadb",
     "database",
     "sql",
-    "schema"
+    "schema",
+    "ssh"
   ],
   "main": "./dist/extension.js",
   "contributes": {
     "viewsContainers": {
       "activitybar": [
         {
-          "id": "mysqlWorkbench",
-          "title": "MySQL Workbench",
+          "id": "burrowDbClient",
+          "title": "Burrow DB Client",
           "icon": "resources/database.svg"
         }
       ],
       "panel": [
         {
-          "id": "mysqlWorkbenchPanel",
+          "id": "burrowDbClientPanel",
           "title": "SQL Results",
           "icon": "resources/database.svg"
         }
       ]
     },
     "views": {
-      "mysqlWorkbench": [
+      "burrowDbClient": [
         {
-          "id": "mysqlWorkbench.connections",
+          "id": "burrowDbClient.connections",
           "name": "Connections",
           "icon": "resources/database.svg"
         }
       ],
-      "mysqlWorkbenchPanel": [
+      "burrowDbClientPanel": [
         {
-          "id": "mysqlWorkbench.results",
+          "id": "burrowDbClient.results",
           "name": "Results",
           "type": "webview",
           "icon": "resources/database.svg"
@@ -64,104 +65,104 @@
     },
     "viewsWelcome": [
       {
-        "view": "mysqlWorkbench.connections",
-        "contents": "No MySQL connections yet.\nAdd a connection to browse its schemas and tables.\n[Add Connection](command:mysqlWorkbench.addConnection)"
+        "view": "burrowDbClient.connections",
+        "contents": "No MySQL connections yet.\nAdd a connection to browse its schemas and tables.\n[Add Connection](command:burrowDbClient.addConnection)"
       }
     ],
     "commands": [
       {
-        "command": "mysqlWorkbench.addConnection",
+        "command": "burrowDbClient.addConnection",
         "title": "Add Connection",
-        "category": "MySQL Workbench",
+        "category": "Burrow DB Client",
         "icon": "$(add)"
       },
       {
-        "command": "mysqlWorkbench.manageConnections",
+        "command": "burrowDbClient.manageConnections",
         "title": "Manage Connections",
-        "category": "MySQL Workbench",
+        "category": "Burrow DB Client",
         "icon": "$(gear)"
       },
       {
-        "command": "mysqlWorkbench.refresh",
+        "command": "burrowDbClient.refresh",
         "title": "Refresh",
-        "category": "MySQL Workbench",
+        "category": "Burrow DB Client",
         "icon": "$(refresh)"
       },
       {
-        "command": "mysqlWorkbench.editConnection",
+        "command": "burrowDbClient.editConnection",
         "title": "Edit Connection",
-        "category": "MySQL Workbench",
+        "category": "Burrow DB Client",
         "icon": "$(edit)"
       },
       {
-        "command": "mysqlWorkbench.deleteConnection",
+        "command": "burrowDbClient.deleteConnection",
         "title": "Delete Connection",
-        "category": "MySQL Workbench",
+        "category": "Burrow DB Client",
         "icon": "$(trash)"
       },
       {
-        "command": "mysqlWorkbench.openConsole",
+        "command": "burrowDbClient.openConsole",
         "title": "Open SQL Console",
-        "category": "MySQL Workbench",
+        "category": "Burrow DB Client",
         "icon": "$(terminal)"
       },
       {
-        "command": "mysqlWorkbench.runActiveQuery",
+        "command": "burrowDbClient.runActiveQuery",
         "title": "Run Active SQL File / Selection",
-        "category": "MySQL Workbench",
+        "category": "Burrow DB Client",
         "icon": "$(play)"
       }
     ],
     "menus": {
       "view/title": [
         {
-          "command": "mysqlWorkbench.addConnection",
-          "when": "view == mysqlWorkbench.connections",
+          "command": "burrowDbClient.addConnection",
+          "when": "view == burrowDbClient.connections",
           "group": "navigation@1"
         },
         {
-          "command": "mysqlWorkbench.manageConnections",
-          "when": "view == mysqlWorkbench.connections",
+          "command": "burrowDbClient.manageConnections",
+          "when": "view == burrowDbClient.connections",
           "group": "navigation@2"
         },
         {
-          "command": "mysqlWorkbench.refresh",
-          "when": "view == mysqlWorkbench.connections",
+          "command": "burrowDbClient.refresh",
+          "when": "view == burrowDbClient.connections",
           "group": "navigation@3"
         }
       ],
       "view/item/context": [
         {
-          "command": "mysqlWorkbench.openConsole",
-          "when": "view == mysqlWorkbench.connections && viewItem == mysqlConnection",
+          "command": "burrowDbClient.openConsole",
+          "when": "view == burrowDbClient.connections && viewItem == mysqlConnection",
           "group": "inline@1"
         },
         {
-          "command": "mysqlWorkbench.editConnection",
-          "when": "view == mysqlWorkbench.connections && viewItem == mysqlConnection",
+          "command": "burrowDbClient.editConnection",
+          "when": "view == burrowDbClient.connections && viewItem == mysqlConnection",
           "group": "1_modify@1"
         },
         {
-          "command": "mysqlWorkbench.deleteConnection",
-          "when": "view == mysqlWorkbench.connections && viewItem == mysqlConnection",
+          "command": "burrowDbClient.deleteConnection",
+          "when": "view == burrowDbClient.connections && viewItem == mysqlConnection",
           "group": "1_modify@2"
         },
         {
-          "command": "mysqlWorkbench.openConsole",
-          "when": "view == mysqlWorkbench.connections && viewItem == mysqlSchema",
+          "command": "burrowDbClient.openConsole",
+          "when": "view == burrowDbClient.connections && viewItem == mysqlSchema",
           "group": "inline@1"
         }
       ]
     },
     "configuration": {
-      "title": "MySQL Workbench",
+      "title": "Burrow DB Client",
       "properties": {
-        "mysqlWorkbench.queryRowLimit": {
+        "burrowDbClient.queryRowLimit": {
           "type": "number",
           "default": 500,
           "markdownDescription": "Default `LIMIT` applied when previewing a table's rows from the tree. Set to `0` to disable the automatic limit."
         },
-        "mysqlWorkbench.connectTimeout": {
+        "burrowDbClient.connectTimeout": {
           "type": "number",
           "default": 10000,
           "markdownDescription": "Connection timeout in milliseconds when opening a MySQL connection."

@@ -18,34 +18,34 @@ export function activate(context: vscode.ExtensionContext): void {
   const results = new ResultsView(context);
 
   context.subscriptions.push(
-    vscode.window.registerTreeDataProvider("mysqlWorkbench.connections", tree),
+    vscode.window.registerTreeDataProvider("burrowDbClient.connections", tree),
     vscode.window.registerWebviewViewProvider(RESULTS_VIEW_ID, results, {
       webviewOptions: { retainContextWhenHidden: true },
     }),
   );
 
   context.subscriptions.push(
-    vscode.commands.registerCommand("mysqlWorkbench.addConnection", () => {
+    vscode.commands.registerCommand("burrowDbClient.addConnection", () => {
       ConnectionManagerPanel.show(context, store, db);
     }),
 
-    vscode.commands.registerCommand("mysqlWorkbench.manageConnections", () => {
+    vscode.commands.registerCommand("burrowDbClient.manageConnections", () => {
       ConnectionManagerPanel.show(context, store, db);
     }),
 
-    vscode.commands.registerCommand("mysqlWorkbench.refresh", () =>
+    vscode.commands.registerCommand("burrowDbClient.refresh", () =>
       tree.refresh(),
     ),
 
     vscode.commands.registerCommand(
-      "mysqlWorkbench.editConnection",
+      "burrowDbClient.editConnection",
       (node?: ConnectionNode) => {
         ConnectionManagerPanel.show(context, store, db, node?.config.id);
       },
     ),
 
     vscode.commands.registerCommand(
-      "mysqlWorkbench.deleteConnection",
+      "burrowDbClient.deleteConnection",
       async (node?: ConnectionNode) => {
         if (!node) {
           return;
@@ -63,7 +63,7 @@ export function activate(context: vscode.ExtensionContext): void {
     ),
 
     vscode.commands.registerCommand(
-      "mysqlWorkbench.openConsole",
+      "burrowDbClient.openConsole",
       (node?: ConnectionNode | SchemaNode) => {
         if (!node) {
           return;
@@ -74,13 +74,13 @@ export function activate(context: vscode.ExtensionContext): void {
     ),
 
     vscode.commands.registerCommand(
-      "mysqlWorkbench.previewTable",
+      "burrowDbClient.previewTable",
       (node?: TableNode) => {
         if (!node) {
           return;
         }
         const limit = vscode.workspace
-          .getConfiguration("mysqlWorkbench")
+          .getConfiguration("burrowDbClient")
           .get<number>("queryRowLimit", 500);
         const clause = limit && limit > 0 ? ` LIMIT ${limit}` : "";
         const panel = ConsolePanel.show(context, db, results, node.config);
@@ -91,7 +91,7 @@ export function activate(context: vscode.ExtensionContext): void {
     ),
 
     vscode.commands.registerCommand(
-      "mysqlWorkbench.runActiveQuery",
+      "burrowDbClient.runActiveQuery",
       async () => {
         const editor = vscode.window.activeTextEditor;
         if (!editor) {

@@ -8,7 +8,7 @@ type OutboundMessage =
   | { type: "error"; message: string; label: string }
   | { type: "reset" };
 
-export const RESULTS_VIEW_ID = "mysqlWorkbench.results";
+export const RESULTS_VIEW_ID = "burrowDbClient.results";
 
 /**
  * The results grid, hosted as a WebviewView in the PANEL (next to Terminal /

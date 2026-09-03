@@ -107,7 +107,7 @@ function applyTheme(): void {
     { token: "predefined.sql", foreground: palette.keyword },
   ];
 
-  monaco.editor.defineTheme("mysqlWorkbench", {
+  monaco.editor.defineTheme("burrowDbClient", {
     base,
     inherit: true,
     rules,
@@ -116,7 +116,7 @@ function applyTheme(): void {
       "editor.background": bg,
     },
   });
-  monaco.editor.setTheme("mysqlWorkbench");
+  monaco.editor.setTheme("burrowDbClient");
 }
 
 const prev = vscodeApi.getState() as ConsoleState | undefined;

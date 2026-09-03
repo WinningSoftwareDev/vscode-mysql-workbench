@@ -110,7 +110,7 @@ export class ConnectionManagerPanel {
     private readonly initialSelectId: string | null,
   ) {
     this.panel = vscode.window.createWebviewPanel(
-      "mysqlWorkbench.manager",
+      "burrowDbClient.manager",
       "MySQL Connections",
       vscode.ViewColumn.Active,
       {

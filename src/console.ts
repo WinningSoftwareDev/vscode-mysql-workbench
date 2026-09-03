@@ -45,7 +45,7 @@ export class ConsolePanel {
     schema?: string,
   ) {
     this.panel = vscode.window.createWebviewPanel(
-      "mysqlWorkbench.console",
+      "burrowDbClient.console",
       `SQL · ${config.name}${schema ? ` · ${schema}` : ""}`,
       vscode.ViewColumn.Active,
       {

@@ -39,14 +39,14 @@ export interface ConnectionConfig {
   ssh?: SshConfig;
 }
 
-const STORAGE_KEY = "mysqlWorkbench.connections";
+const STORAGE_KEY = "burrowDbClient.connections";
 
 function secretKey(id: string): string {
-  return `mysqlWorkbench.password.${id}`;
+  return `burrowDbClient.password.${id}`;
 }
 
 function passphraseKey(id: string): string {
-  return `mysqlWorkbench.sshPassphrase.${id}`;
+  return `burrowDbClient.sshPassphrase.${id}`;
 }
 
 /**

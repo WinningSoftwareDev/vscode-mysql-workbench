@@ -40,7 +40,7 @@ export class TableNode extends vscode.TreeItem {
     this.iconPath = new vscode.ThemeIcon(isView ? "eye" : "table");
     // Click a table to preview its rows in the results grid.
     this.command = {
-      command: "mysqlWorkbench.previewTable",
+      command: "burrowDbClient.previewTable",
       title: "Preview Rows",
       arguments: [this],
     };
@@ -117,7 +117,7 @@ export class ConnectionTreeProvider implements vscode.TreeDataProvider<Node> {
       return [];
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
-      void vscode.window.showErrorMessage(`MySQL Workbench: ${message}`);
+      void vscode.window.showErrorMessage(`Burrow DB Client: ${message}`);
       return [];
     }
   }

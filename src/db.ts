@@ -37,7 +37,7 @@ export class DbManager {
 
   private connectTimeout(): number {
     return vscode.workspace
-      .getConfiguration("mysqlWorkbench")
+      .getConfiguration("burrowDbClient")
       .get<number>("connectTimeout", 10000);
   }
 

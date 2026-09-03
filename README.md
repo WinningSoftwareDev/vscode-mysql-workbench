@@ -1,4 +1,4 @@
-# MySQL Workbench (VS Code)
+# Burrow DB Client (VS Code)
 
 A 100% free database connection manager for VS Code.
 
@@ -39,7 +39,7 @@ as the **whole server**, the way a PHPStorm/DBeaver data source does.
 
 ## Usage
 
-1. Open the **MySQL Workbench** view in the Activity Bar.
+1. Open the **Burrow DB Client** view in the Activity Bar.
 2. Click **＋** (Add Connection) or the **gear** (Manage Connections) to open the
    manager panel. Fill in host, port, user, and password; leave _Default schema_
    blank to browse the whole server. Click **Test Connection** to verify, then
@@ -55,22 +55,22 @@ as the **whole server**, the way a PHPStorm/DBeaver data source does.
 
 ## Commands
 
-| Command                                          | Description                                                       |
-| ------------------------------------------------ | ----------------------------------------------------------------- |
-| MySQL Workbench: Add Connection                  | Open the manager to create a new connection.                      |
-| MySQL Workbench: Manage Connections              | Open the connection manager panel.                                |
-| MySQL Workbench: Edit Connection                 | Edit the selected connection.                                     |
-| MySQL Workbench: Delete Connection               | Delete the selected connection.                                   |
-| MySQL Workbench: Refresh                         | Reload the connection tree.                                       |
-| MySQL Workbench: Open SQL Console                | Open a SQL editor bound to a connection (or schema).              |
-| MySQL Workbench: Run Active SQL File / Selection | Run the active `.sql` editor (or selection) against a connection. |
+| Command                                           | Description                                                       |
+| ------------------------------------------------- | ----------------------------------------------------------------- |
+| Burrow DB Client: Add Connection                  | Open the manager to create a new connection.                      |
+| Burrow DB Client: Manage Connections              | Open the connection manager panel.                                |
+| Burrow DB Client: Edit Connection                 | Edit the selected connection.                                     |
+| Burrow DB Client: Delete Connection               | Delete the selected connection.                                   |
+| Burrow DB Client: Refresh                         | Reload the connection tree.                                       |
+| Burrow DB Client: Open SQL Console                | Open a SQL editor bound to a connection (or schema).              |
+| Burrow DB Client: Run Active SQL File / Selection | Run the active `.sql` editor (or selection) against a connection. |
 
 ## Settings
 
 | Setting                         | Default | Description                                                           |
 | ------------------------------- | ------- | --------------------------------------------------------------------- |
-| `mysqlWorkbench.queryRowLimit`  | `500`   | `LIMIT` applied when previewing a table from the tree (`0` disables). |
-| `mysqlWorkbench.connectTimeout` | `10000` | Connection / SSH handshake timeout in ms.                             |
+| `burrowDbClient.queryRowLimit`  | `500`   | `LIMIT` applied when previewing a table from the tree (`0` disables). |
+| `burrowDbClient.connectTimeout` | `10000` | Connection / SSH handshake timeout in ms.                             |
 
 ## Security model
 
