@@ -81,6 +81,26 @@ connection — only serialisable result rows. Connection passwords and SSH key
 passphrases live in SecretStorage; SSH private keys are referenced by path and
 never copied into extension storage.
 
+## Feedback & contributing
+
+Burrow DB Client is free and actively developed, and **your feedback genuinely
+shapes it** — especially in these early releases. If something is broken,
+confusing, or missing, please say so:
+
+- **🐛 Report a bug** or **💡 request a feature** on the
+  [issue tracker](https://github.com/WinningSoftwareDev/vscode-mysql-workbench/issues).
+  A good bug report includes: what you did, what you expected, what happened,
+  your VS Code version, and the MySQL/MariaDB server version (and whether you
+  were connecting over SSH).
+- **⭐ Rate & review** on the Marketplace if it's useful to you — it helps other
+  developers find it.
+- **🔧 Pull requests welcome.** The repo is on
+  [GitHub](https://github.com/WinningSoftwareDev/vscode-mysql-workbench); open an
+  issue first for anything substantial so we can agree the approach.
+
+Please **don't include real credentials, connection strings, or private keys**
+in an issue — redact hosts and secrets before pasting logs or screenshots.
+
 ## Roadmap
 
 The initial release is read-only. Planned: result-grid sorting/export
