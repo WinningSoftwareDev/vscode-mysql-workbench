@@ -3,6 +3,17 @@
 All notable changes to this extension are documented here. This project adheres
 to [Semantic Versioning](https://semver.org/).
 
+## [Unreleased]
+
+### Added
+
+- **Sortable, resizable results grid.** The results panel now uses a proper
+  data grid: click a column header to sort (type-aware — numbers, dates, and
+  strings sort correctly), and drag column borders to resize.
+- **Export results to CSV / JSON.** Export buttons in the results panel open a
+  preview of the current result set (respecting the active sort order) with
+  **Copy to clipboard** and an optional **Save to file…** (native save dialog).
+
 ## [0.1.0] - 2026-09-03
 
 Initial release.

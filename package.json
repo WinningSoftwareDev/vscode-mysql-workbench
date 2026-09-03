@@ -185,11 +185,13 @@
   "dependencies": {
     "monaco-editor": "^0.52.2",
     "mysql2": "^3.11.0",
-    "ssh2": "^1.17.0"
+    "ssh2": "^1.17.0",
+    "tabulator-tables": "^6.5.2"
   },
   "devDependencies": {
     "@types/node": "^22.0.0",
     "@types/ssh2": "^1.15.6",
+    "@types/tabulator-tables": "^6.3.6",
     "@types/vscode": "^1.90.0",
     "@typescript-eslint/eslint-plugin": "^8.0.0",
     "@typescript-eslint/parser": "^8.0.0",

@@ -52,8 +52,23 @@ const workerConfig = {
   plugins: [problemMatcher("worker")],
 };
 
+/** The results panel UI bundle (browser/ESM) — Tabulator grid + export. */
+const resultsConfig = {
+  entryPoints: ["webview/results.ts"],
+  bundle: true,
+  format: "iife",
+  minify: production,
+  sourcemap: !production,
+  sourcesContent: false,
+  platform: "browser",
+  outfile: "media/results.bundle.js",
+  loader: { ".css": "css" },
+  logLevel: "silent",
+  plugins: [problemMatcher("results")],
+};
+
 async function main() {
-  const configs = [extensionConfig, webviewConfig, workerConfig];
+  const configs = [extensionConfig, webviewConfig, workerConfig, resultsConfig];
   if (watch) {
     const contexts = await Promise.all(configs.map((c) => esbuild.context(c)));
     await Promise.all(contexts.map((ctx) => ctx.watch()));

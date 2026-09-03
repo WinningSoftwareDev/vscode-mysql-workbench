@@ -24,7 +24,8 @@ as the **whole server**, the way a PHPStorm/DBeaver data source does.
 - **Monaco SQL editor + results panel.** The syntax-highlighted SQL editor
   opens in the editor area (one per connection); run with `Ctrl`/`Cmd`+`Enter`.
   Results render in a **SQL Results** tab in the bottom panel, next to Terminal
-  / Ports — the last query wins the shared panel.
+  / Ports — the last query wins the shared panel. The grid is **sortable and
+  resizable**, and results **export to CSV / JSON** (preview, copy, or save).
 - **Table preview.** Click a table in the tree to preview its rows.
 - **SSH tunnelling.** Connect through a bastion / jump host: toggle _Connect
   through an SSH tunnel_ and supply the SSH host/user + a private-key file
@@ -103,8 +104,8 @@ in an issue — redact hosts and secrets before pasting logs or screenshots.
 
 ## Roadmap
 
-The initial release is read-only. Planned: result-grid sorting/export
-(CSV/JSON), query history, row editing, DDL view, and ER diagrams.
+The initial release is read-only. Planned: query history, row editing, DDL
+view, and ER diagrams.
 
 ## License
 

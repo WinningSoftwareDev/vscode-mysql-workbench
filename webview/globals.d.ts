@@ -13,3 +13,6 @@ interface Window {
 }
 
 declare var MONACO_WORKER_URI: string;
+
+// Side-effect CSS imports (esbuild bundles them via the css loader).
+declare module "*.css";

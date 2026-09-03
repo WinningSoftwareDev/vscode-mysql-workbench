@@ -32,11 +32,40 @@ export class ResultsView implements vscode.WebviewViewProvider {
       ],
     };
     webviewView.webview.html = this.html(webviewView.webview);
+    webviewView.webview.onDidReceiveMessage((msg) => this.onMessage(msg));
     // Flush anything that arrived before the view existed.
     if (this.pending) {
       void webviewView.webview.postMessage(this.pending);
       this.pending = undefined;
     }
+  }
+
+  private async onMessage(msg: unknown): Promise<void> {
+    if (
+      typeof msg !== "object" ||
+      msg === null ||
+      (msg as { type?: string }).type !== "save"
+    ) {
+      return;
+    }
+    const { format, content } = msg as {
+      format: "csv" | "json";
+      content: string;
+    };
+    const uri = await vscode.window.showSaveDialog({
+      filters:
+        format === "csv"
+          ? { "CSV files": ["csv"] }
+          : { "JSON files": ["json"] },
+      saveLabel: "Export",
+    });
+    if (!uri) {
+      return;
+    }
+    await vscode.workspace.fs.writeFile(uri, Buffer.from(content, "utf8"));
+    void vscode.window.showInformationMessage(
+      `Exported results to ${uri.fsPath}`,
+    );
   }
 
   /**
@@ -84,14 +113,26 @@ export class ResultsView implements vscode.WebviewViewProvider {
   private html(webview: vscode.Webview): string {
     const nonce = getNonce();
     const scriptUri = webview.asWebviewUri(
-      vscode.Uri.joinPath(this.context.extensionUri, "media", "results.js"),
+      vscode.Uri.joinPath(
+        this.context.extensionUri,
+        "media",
+        "results.bundle.js",
+      ),
     );
     const styleUri = webview.asWebviewUri(
       vscode.Uri.joinPath(this.context.extensionUri, "media", "results.css"),
     );
+    const bundleStyleUri = webview.asWebviewUri(
+      vscode.Uri.joinPath(
+        this.context.extensionUri,
+        "media",
+        "results.bundle.css",
+      ),
+    );
+    // Tabulator injects <style> at runtime, so style-src needs 'unsafe-inline'.
     const csp = [
       `default-src 'none'`,
-      `style-src ${webview.cspSource}`,
+      `style-src ${webview.cspSource} 'unsafe-inline'`,
       `script-src 'nonce-${nonce}'`,
       `font-src ${webview.cspSource}`,
     ].join("; ");
@@ -102,12 +143,29 @@ export class ResultsView implements vscode.WebviewViewProvider {
   <meta charset="UTF-8" />
   <meta http-equiv="Content-Security-Policy" content="${csp}" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link href="${bundleStyleUri}" rel="stylesheet" />
   <link href="${styleUri}" rel="stylesheet" />
   <title>SQL Results</title>
 </head>
 <body>
-  <div id="meta" class="meta empty">Run a query to see results here.</div>
+  <div id="bar">
+    <div id="meta" class="meta empty">Run a query to see results here.</div>
+    <div id="toolbar">
+      <button id="export-csv" class="tb" disabled>Export CSV</button>
+      <button id="export-json" class="tb" disabled>Export JSON</button>
+    </div>
+  </div>
   <div id="grid"></div>
+  <div id="preview" hidden>
+    <div class="preview-head">
+      <span>Export preview</span>
+      <span class="spacer"></span>
+      <button id="copy-btn" class="tb primary">Copy</button>
+      <button id="save-btn" class="tb">Save to file…</button>
+      <button id="close-preview" class="tb">Close</button>
+    </div>
+    <textarea id="preview-text" spellcheck="false" readonly></textarea>
+  </div>
   <script nonce="${nonce}" src="${scriptUri}"></script>
 </body>
 </html>`;

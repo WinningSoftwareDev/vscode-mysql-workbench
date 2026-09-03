@@ -13,13 +13,22 @@ body {
   flex-direction: column;
 }
 
-.meta {
-  padding: 5px 12px;
+#bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 4px 10px;
   border-bottom: 1px solid var(--vscode-panel-border);
+  flex: 0 0 auto;
+}
+
+.meta {
   font-size: 0.85em;
   opacity: 0.9;
-  white-space: pre-wrap;
-  flex: 0 0 auto;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex: 1;
 }
 
 .meta.empty {
@@ -37,42 +46,145 @@ body {
 
 .meta.error {
   color: var(--vscode-errorForeground);
+  white-space: pre-wrap;
+}
+
+#toolbar {
+  display: flex;
+  gap: 6px;
+  flex: 0 0 auto;
+}
+
+button.tb {
+  padding: 3px 10px;
+  border: 1px solid var(--vscode-button-secondaryBackground, transparent);
+  border-radius: 3px;
+  cursor: pointer;
+  font-size: 0.82em;
+  color: var(--vscode-button-secondaryForeground);
+  background: var(--vscode-button-secondaryBackground);
+}
+
+button.tb:hover:not(:disabled) {
+  background: var(--vscode-button-secondaryHoverBackground);
+}
+
+button.tb.primary {
+  color: var(--vscode-button-foreground);
+  background: var(--vscode-button-background);
+  border-color: transparent;
+}
+
+button.tb.primary:hover {
+  background: var(--vscode-button-hoverBackground);
+}
+
+button.tb:disabled {
+  opacity: 0.4;
+  cursor: default;
 }
 
 #grid {
   flex: 1;
-  overflow: auto;
-}
-
-table {
-  border-collapse: collapse;
-  width: 100%;
-  font-size: 0.9em;
-}
-
-th,
-td {
-  border: 1px solid var(--vscode-panel-border);
-  padding: 3px 8px;
-  text-align: left;
-  white-space: nowrap;
-  max-width: 480px;
   overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-thead th {
-  position: sticky;
-  top: 0;
-  background: var(--vscode-editorWidget-background);
-  z-index: 1;
-}
-
-tbody tr:nth-child(even) {
-  background: var(--vscode-list-hoverBackground);
 }
 
 .null {
   opacity: 0.5;
   font-style: italic;
+}
+
+/* ---- Export preview ---------------------------------------------------- */
+
+#preview {
+  flex: 0 0 40%;
+  display: flex;
+  flex-direction: column;
+  border-top: 1px solid var(--vscode-panel-border);
+}
+
+#preview[hidden] {
+  display: none;
+}
+
+.preview-head {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-bottom: 1px solid var(--vscode-panel-border);
+  font-size: 0.82em;
+}
+
+.preview-head .spacer {
+  flex: 1;
+}
+
+#preview-text {
+  flex: 1;
+  resize: none;
+  border: none;
+  outline: none;
+  padding: 8px 10px;
+  color: var(--vscode-editor-foreground);
+  background: var(--vscode-editor-background);
+  font-family: var(--vscode-editor-font-family, monospace);
+  font-size: 0.85em;
+  white-space: pre;
+}
+
+/* ---- Tabulator theming (map onto VS Code theme variables) -------------- */
+
+.tabulator {
+  background: transparent;
+  border: none;
+  font-size: 0.9em;
+}
+
+.tabulator .tabulator-header {
+  background: var(--vscode-editorWidget-background);
+  border-bottom: 1px solid var(--vscode-panel-border);
+  color: var(--vscode-foreground);
+}
+
+.tabulator .tabulator-header .tabulator-col {
+  background: var(--vscode-editorWidget-background);
+  border-right: 1px solid var(--vscode-panel-border);
+  color: var(--vscode-foreground);
+}
+
+.tabulator .tabulator-header .tabulator-col:hover {
+  background: var(--vscode-list-hoverBackground);
+  color: var(--vscode-foreground);
+}
+
+/* Keep the title text readable on hover (Tabulator otherwise leaves it to
+   inherit and the hover background can wash it out). */
+.tabulator
+  .tabulator-header
+  .tabulator-col:hover
+  .tabulator-col-title {
+  color: var(--vscode-foreground);
+}
+
+.tabulator .tabulator-row {
+  background: var(--vscode-editor-background);
+  color: var(--vscode-foreground);
+  border-bottom: 1px solid var(--vscode-panel-border);
+}
+
+.tabulator .tabulator-row.tabulator-row-even {
+  background: var(--vscode-list-hoverBackground);
+}
+
+.tabulator .tabulator-row:hover {
+  background: var(--vscode-list-hoverBackground);
+}
+
+.tabulator .tabulator-cell {
+  border-right: 1px solid var(--vscode-panel-border);
+}
+
+.tabulator .tabulator-col-resize-handle {
+  opacity: 0.4;
 }
