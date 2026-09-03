@@ -1,0 +1,172 @@
+{
+  "name": "mysql-workbench",
+  "displayName": "MySQL Workbench",
+  "description": "Add MySQL connections, browse every schema/table in a connection, and run SQL in a console with a results grid. No connection limits.",
+  "version": "0.1.0",
+  "publisher": "WinningSoftware",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/WinningSoftwareDev/vscode-mysql-workbench.git"
+  },
+  "bugs": {
+    "url": "https://github.com/WinningSoftwareDev/vscode-mysql-workbench/issues"
+  },
+  "homepage": "https://github.com/WinningSoftwareDev/vscode-mysql-workbench#readme",
+  "engines": {
+    "vscode": "^1.90.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "icon": "icon.png",
+  "keywords": [
+    "mysql",
+    "mariadb",
+    "database",
+    "sql",
+    "schema"
+  ],
+  "main": "./dist/extension.js",
+  "contributes": {
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "mysqlWorkbench",
+          "title": "MySQL Workbench",
+          "icon": "resources/database.svg"
+        }
+      ]
+    },
+    "views": {
+      "mysqlWorkbench": [
+        {
+          "id": "mysqlWorkbench.connections",
+          "name": "Connections"
+        }
+      ]
+    },
+    "viewsWelcome": [
+      {
+        "view": "mysqlWorkbench.connections",
+        "contents": "No MySQL connections yet.\nAdd a connection to browse its schemas and tables.\n[Add Connection](command:mysqlWorkbench.addConnection)"
+      }
+    ],
+    "commands": [
+      {
+        "command": "mysqlWorkbench.addConnection",
+        "title": "Add Connection",
+        "category": "MySQL Workbench",
+        "icon": "$(add)"
+      },
+      {
+        "command": "mysqlWorkbench.refresh",
+        "title": "Refresh",
+        "category": "MySQL Workbench",
+        "icon": "$(refresh)"
+      },
+      {
+        "command": "mysqlWorkbench.editConnection",
+        "title": "Edit Connection",
+        "category": "MySQL Workbench",
+        "icon": "$(edit)"
+      },
+      {
+        "command": "mysqlWorkbench.deleteConnection",
+        "title": "Delete Connection",
+        "category": "MySQL Workbench",
+        "icon": "$(trash)"
+      },
+      {
+        "command": "mysqlWorkbench.openConsole",
+        "title": "Open SQL Console",
+        "category": "MySQL Workbench",
+        "icon": "$(terminal)"
+      },
+      {
+        "command": "mysqlWorkbench.runActiveQuery",
+        "title": "Run Active SQL File / Selection",
+        "category": "MySQL Workbench",
+        "icon": "$(play)"
+      }
+    ],
+    "menus": {
+      "view/title": [
+        {
+          "command": "mysqlWorkbench.addConnection",
+          "when": "view == mysqlWorkbench.connections",
+          "group": "navigation@1"
+        },
+        {
+          "command": "mysqlWorkbench.refresh",
+          "when": "view == mysqlWorkbench.connections",
+          "group": "navigation@2"
+        }
+      ],
+      "view/item/context": [
+        {
+          "command": "mysqlWorkbench.openConsole",
+          "when": "view == mysqlWorkbench.connections && viewItem == mysqlConnection",
+          "group": "inline@1"
+        },
+        {
+          "command": "mysqlWorkbench.editConnection",
+          "when": "view == mysqlWorkbench.connections && viewItem == mysqlConnection",
+          "group": "1_modify@1"
+        },
+        {
+          "command": "mysqlWorkbench.deleteConnection",
+          "when": "view == mysqlWorkbench.connections && viewItem == mysqlConnection",
+          "group": "1_modify@2"
+        },
+        {
+          "command": "mysqlWorkbench.openConsole",
+          "when": "view == mysqlWorkbench.connections && viewItem == mysqlSchema",
+          "group": "inline@1"
+        }
+      ]
+    },
+    "configuration": {
+      "title": "MySQL Workbench",
+      "properties": {
+        "mysqlWorkbench.queryRowLimit": {
+          "type": "number",
+          "default": 500,
+          "markdownDescription": "Default `LIMIT` applied when previewing a table's rows from the tree. Set to `0` to disable the automatic limit."
+        },
+        "mysqlWorkbench.connectTimeout": {
+          "type": "number",
+          "default": 10000,
+          "markdownDescription": "Connection timeout in milliseconds when opening a MySQL connection."
+        }
+      }
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run package",
+    "compile": "npm run check-types && node esbuild.js",
+    "watch": "npm-run-all -p watch:*",
+    "watch:esbuild": "node esbuild.js --watch",
+    "watch:tsc": "tsc --noEmit --watch --project tsconfig.json",
+    "package": "npm run check-types && node esbuild.js --production",
+    "check-types": "tsc --noEmit",
+    "lint": "eslint src",
+    "format": "prettier --write \"src/**/*.ts\" \"*.{js,json,md}\"",
+    "format:check": "prettier --check \"src/**/*.ts\" \"*.{js,json,md}\""
+  },
+  "dependencies": {
+    "mysql2": "^3.11.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "@types/vscode": "^1.90.0",
+    "@typescript-eslint/eslint-plugin": "^8.0.0",
+    "@typescript-eslint/parser": "^8.0.0",
+    "esbuild": "^0.24.0",
+    "eslint": "^9.0.0",
+    "eslint-config-prettier": "^9.1.0",
+    "npm-run-all": "^4.1.5",
+    "prettier": "^3.3.0",
+    "typescript": "^5.6.0"
+  }
+}
