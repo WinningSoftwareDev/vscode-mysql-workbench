@@ -49,14 +49,16 @@
       "mysqlWorkbench": [
         {
           "id": "mysqlWorkbench.connections",
-          "name": "Connections"
+          "name": "Connections",
+          "icon": "resources/database.svg"
         }
       ],
       "mysqlWorkbenchPanel": [
         {
           "id": "mysqlWorkbench.results",
           "name": "Results",
-          "type": "webview"
+          "type": "webview",
+          "icon": "resources/database.svg"
         }
       ]
     },
