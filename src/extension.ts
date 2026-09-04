@@ -17,11 +17,29 @@ export function activate(context: vscode.ExtensionContext): void {
   const tree = new ConnectionTreeProvider(store, db);
   const results = new ResultsView(context);
 
+  // Backs the read-only DDL view. `SHOW CREATE TABLE` output is stashed here
+  // keyed by the virtual document's URI path, then rendered via a
+  // TextDocumentContentProvider so the tab is genuinely read-only (no dirty
+  // "unsaved" state, unlike an untitled document).
+  const ddlContents = new Map<string, string>();
+  const DDL_SCHEME = "burrow-ddl";
+  const ddlOnDidChange = new vscode.EventEmitter<vscode.Uri>();
+  const ddlProvider: vscode.TextDocumentContentProvider = {
+    onDidChange: ddlOnDidChange.event,
+    provideTextDocumentContent(uri) {
+      return ddlContents.get(uri.path) ?? "";
+    },
+  };
+
   context.subscriptions.push(
     vscode.window.registerTreeDataProvider("burrowDbClient.connections", tree),
     vscode.window.registerWebviewViewProvider(RESULTS_VIEW_ID, results, {
       webviewOptions: { retainContextWhenHidden: true },
     }),
+    vscode.workspace.registerTextDocumentContentProvider(
+      DDL_SCHEME,
+      ddlProvider,
+    ),
   );
 
   context.subscriptions.push(
@@ -87,6 +105,37 @@ export function activate(context: vscode.ExtensionContext): void {
         panel.run(
           `SELECT * FROM \`${node.schema}\`.\`${node.table}\`${clause};`,
         );
+      },
+    ),
+
+    vscode.commands.registerCommand(
+      "burrowDbClient.showCreateTable",
+      async (node?: TableNode) => {
+        if (!node) {
+          return;
+        }
+        try {
+          const ddl = await db.showCreate(
+            node.config,
+            node.schema,
+            node.table,
+          );
+          // A stable, human-readable virtual path. The scheme routes it to the
+          // read-only content provider; a trailing .sql gives SQL highlighting.
+          const uri = vscode.Uri.parse(
+            `${DDL_SCHEME}:/${node.schema}.${node.table}.sql`,
+          );
+          ddlContents.set(uri.path, ddl);
+          // Nudge the provider in case this URI was opened earlier with stale
+          // DDL (e.g. the table was altered since).
+          ddlOnDidChange.fire(uri);
+          const doc = await vscode.workspace.openTextDocument(uri);
+          await vscode.languages.setTextDocumentLanguage(doc, "sql");
+          await vscode.window.showTextDocument(doc, { preview: true });
+        } catch (err) {
+          const message = err instanceof Error ? err.message : String(err);
+          void vscode.window.showErrorMessage(`Burrow DB Client: ${message}`);
+        }
       },
     ),
 

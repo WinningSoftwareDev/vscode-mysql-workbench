@@ -3,10 +3,13 @@
 All notable changes to this extension are documented here. This project adheres
 to [Semantic Versioning](https://semver.org/).
 
-## [Unreleased]
+## [0.4.0] - 2026-09-04
 
 ### Added
 
+- **View a table's DDL.** Right-click a table (or view) in the tree and choose
+  _Show CREATE Statement (DDL)_ to open its `SHOW CREATE TABLE` output in a
+  read-only, SQL-highlighted editor tab.
 - **Schema-aware autocomplete in the SQL console.** The Monaco console now
   suggests schemas, tables/views, and columns drawn from the live connection.
   Completions are context-aware: table names after `FROM` / `JOIN` /

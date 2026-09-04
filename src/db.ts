@@ -210,6 +210,33 @@ export class DbManager {
   }
 
   /**
+   * Return the DDL for a table or view via `SHOW CREATE TABLE`. MySQL/MariaDB
+   * put the statement in a `Create Table` column for tables and a `Create
+   * View` column for views, so we read whichever is present.
+   */
+  async showCreate(
+    config: ConnectionConfig,
+    schema: string,
+    table: string,
+  ): Promise<string> {
+    const pool = await this.pool(config);
+    // Identifiers can't be parameterised; quote and escape backticks instead.
+    const q = (id: string) => "`" + id.replace(/`/g, "``") + "`";
+    const [rows] = await pool.query<mysql.RowDataPacket[]>(
+      `SHOW CREATE TABLE ${q(schema)}.${q(table)}`,
+    );
+    const row = rows[0];
+    if (!row) {
+      throw new Error(`No DDL returned for ${schema}.${table}`);
+    }
+    const ddl = row["Create Table"] ?? row["Create View"];
+    if (ddl === undefined || ddl === null) {
+      throw new Error(`Unexpected SHOW CREATE result for ${schema}.${table}`);
+    }
+    return String(ddl);
+  }
+
+  /**
    * Validate connection details WITHOUT persisting anything. When an SSH
    * config is supplied it stands up a throwaway tunnel, connects through it,
    * runs `SELECT 1`, then tears everything down. Throws on failure so the

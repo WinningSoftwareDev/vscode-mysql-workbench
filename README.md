@@ -115,7 +115,7 @@ in an issue — redact hosts and secrets before pasting logs or screenshots.
 
 ## Roadmap
 
-Planned: query history, row editing, DDL view, and ER diagrams.
+Planned: query history, row editing, and ER diagrams.
 
 ## License
 
