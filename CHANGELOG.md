@@ -3,6 +3,24 @@
 All notable changes to this extension are documented here. This project adheres
 to [Semantic Versioning](https://semver.org/).
 
+## [Unreleased]
+
+### Added
+
+- **Schema-aware autocomplete in the SQL console.** The Monaco console now
+  suggests schemas, tables/views, and columns drawn from the live connection.
+  Completions are context-aware: table names after `FROM` / `JOIN` /
+  `INTO` / `UPDATE`, that schema's tables after `schema.`, a table's columns
+  after `table.` / `alias.` (aliases and schema-qualified references are
+  resolved from the statement), and the target table's columns inside an
+  `INSERT INTO t (…)` column list. Table and column metadata is loaded lazily
+  (schema and table names up front; columns on first use, then cached) across
+  every schema on the connection.
+- **Hover details in the SQL console.** Hovering a table shows its column list;
+  hovering a column shows its type, nullability, and key.
+- **Refresh schema for autocomplete.** A console command (_Burrow: Refresh
+  Schema for Autocomplete_) re-pulls schema metadata when the database changes.
+
 ## [0.3.0] - 2026-09-03
 
 ### Added

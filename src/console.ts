@@ -3,9 +3,33 @@ import { ConnectionConfig } from "./connections";
 import { DbManager } from "./db";
 import { ResultsView } from "./results";
 
-/** host -> console webview (editor-side status only) */
+/** A schema and its table/view names, for autocomplete. */
+interface SchemaMeta {
+  name: string;
+  tables: { name: string; isView: boolean }[];
+}
+
+/** host -> console webview */
 type OutboundMessage =
-  { type: "running" } | { type: "done" } | { type: "failed" };
+  | { type: "running" }
+  | { type: "done" }
+  | { type: "failed" }
+  // Schema/table names for all schemas on the connection (autocomplete).
+  | { type: "schema"; schemas: SchemaMeta[]; defaultSchema?: string }
+  // Columns for a specific table, sent in reply to a "needColumns" request.
+  | {
+      type: "columns";
+      schema: string;
+      table: string;
+      columns: { name: string; type: string; nullable: boolean; key: string }[];
+    };
+
+/** console webview -> host */
+type InboundMessage =
+  | { type: "ready" }
+  | { type: "run"; sql: string }
+  | { type: "needColumns"; schema: string; table: string }
+  | { type: "refreshSchema" };
 
 /**
  * A SQL editor (Monaco), bound to a connection, hosted in the editor area.
@@ -42,7 +66,7 @@ export class ConsolePanel {
     private readonly db: DbManager,
     private readonly results: ResultsView,
     private readonly config: ConnectionConfig,
-    schema?: string,
+    private readonly schema?: string,
   ) {
     this.panel = vscode.window.createWebviewPanel(
       "burrowDbClient.console",
@@ -66,6 +90,50 @@ export class ConsolePanel {
     );
 
     this.panel.onDidDispose(() => this.dispose(), undefined, this.disposables);
+
+    // Autocomplete is primed when the webview signals it's ready (see the
+    // "ready" message in onMessage). Sending here would race the webview's
+    // message listener and get dropped.
+  }
+
+  /**
+   * Load every schema on the connection plus its table/view names (no columns
+   * — those are fetched lazily on demand) and push them to the webview. Errors
+   * are swallowed: autocomplete is best-effort and must never break the panel.
+   */
+  private async sendSchema(): Promise<void> {
+    try {
+      const schemaNames = await this.db.listSchemas(this.config);
+      const schemas: SchemaMeta[] = await Promise.all(
+        schemaNames.map(async (name) => {
+          const tables = await this.db.listTables(this.config, name);
+          return {
+            name,
+            tables: tables.map((t) => ({
+              name: t.name,
+              isView: t.type.toUpperCase().includes("VIEW"),
+            })),
+          };
+        }),
+      );
+      this.post({
+        type: "schema",
+        schemas,
+        defaultSchema: this.schema ?? this.config.defaultSchema,
+      });
+    } catch {
+      // Best-effort: leave autocomplete without data rather than surfacing.
+    }
+  }
+
+  /** Fetch one table's columns on demand and reply to the webview. */
+  private async sendColumns(schema: string, table: string): Promise<void> {
+    try {
+      const columns = await this.db.listColumns(this.config, schema, table);
+      this.post({ type: "columns", schema, table, columns });
+    } catch {
+      // Best-effort: a failed column fetch just means no column completions.
+    }
   }
 
   /** Run SQL programmatically (e.g. from the "run active file" command). */
@@ -79,13 +147,26 @@ export class ConsolePanel {
   }
 
   private async onMessage(msg: unknown): Promise<void> {
-    if (
-      typeof msg === "object" &&
-      msg !== null &&
-      (msg as { type?: string }).type === "run"
-    ) {
-      const sql = String((msg as { sql?: string }).sql ?? "");
-      await this.execute(sql);
+    if (typeof msg !== "object" || msg === null) {
+      return;
+    }
+    const message = msg as InboundMessage;
+    switch (message.type) {
+      case "ready":
+        await this.sendSchema();
+        return;
+      case "run":
+        await this.execute(String(message.sql ?? ""));
+        return;
+      case "needColumns":
+        await this.sendColumns(
+          String(message.schema),
+          String(message.table),
+        );
+        return;
+      case "refreshSchema":
+        await this.sendSchema();
+        return;
     }
   }
 
